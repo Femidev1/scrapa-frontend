@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 function App() {
   const [listings, setListings] = useState([]);
+  const [lastListingUrl, setLastListingUrl] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const fetchListings = () => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -9,7 +11,6 @@ function App() {
       console.error("❌ VITE_API_BASE_URL is not set.");
       return;
     }
-    
 
     fetch(`${baseUrl}/listings?nocache=${Date.now()}`, {
       headers: {
@@ -24,20 +25,61 @@ function App() {
       })
       .then(data => {
         console.log("🧪 Fetched Listings:", data);
+
+        // 🔔 If a new listing is detected
+        if (notificationsEnabled && lastListingUrl && data.length > 0 && data[0].url !== lastListingUrl) {
+          new Notification("🚨 New Motorcycle Listing!", {
+            body: data[0].title,
+            icon: data[0].image || undefined,
+          });
+        }
+
         setListings(data);
+        if (data.length > 0) setLastListingUrl(data[0].url);
       })
       .catch(err => console.error("❌ Fetch error:", err));
   };
 
   useEffect(() => {
     fetchListings();
-    const interval = setInterval(fetchListings, 10000); // fetch every 10 seconds
+    const interval = setInterval(fetchListings, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const requestNotificationPermission = () => {
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          setNotificationsEnabled(true);
+          console.log("🔔 Notifications enabled.");
+        } else {
+          console.log("🔕 Notifications denied.");
+        }
+      });
+    } else if (Notification.permission === "granted") {
+      setNotificationsEnabled(true);
+    }
+  };
 
   return (
     <div style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       <h1 style={{ textAlign: 'center', fontSize: '1.8rem' }}>Live Motorcycle Listings</h1>
+
+      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <button
+          onClick={requestNotificationPermission}
+          style={{
+            background: '#000',
+            color: '#fff',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          🔔 Enable Notifications
+        </button>
+      </div>
 
       {listings.length === 0 ? (
         <p style={{ textAlign: 'center' }}>No listings found.</p>

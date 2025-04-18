@@ -1,0 +1,8 @@
+{
+    "name": "Scrapa - Motorcycle Listings",
+    "short_name": "Scrapa",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000"
+  }

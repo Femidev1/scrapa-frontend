@@ -4,7 +4,7 @@ function App() {
   const [listings, setListings] = useState([])
 
   useEffect(() => {
-    fetch('/listings')
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/listings`)
       .then(res => res.json())
       .then(data => setListings(data))
       .catch(err => console.error('Error loading listings:', err))

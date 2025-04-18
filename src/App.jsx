@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react'
 
+const handleChangeInterval = async (minutes) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_interval: minutes * 60 }),
+    });
+    const data = await response.json();
+    console.log("✅ Updated interval:", data);
+  } catch (err) {
+    console.error("❌ Failed to update refresh interval", err);
+  }
+};
+
 function App() {
   const [listings, setListings] = useState([])
 
@@ -25,6 +39,14 @@ function App() {
   return (
     <div style={{ padding: '2rem' }}>
       <h1>Live Kijiji Listings</h1>
+
+      <div style={{ marginBottom: "1.5rem" }}>
+        <strong>⏱ Set Refresh Interval: </strong>
+        <button onClick={() => handleChangeInterval(5)} style={{ margin: "0 5px" }}>5 mins</button>
+        <button onClick={() => handleChangeInterval(10)} style={{ margin: "0 5px" }}>10 mins</button>
+        <button onClick={() => handleChangeInterval(30)} style={{ margin: "0 5px" }}>30 mins</button>
+      </div>
+
       {listings.length === 0 ? (
         <p>No listings found.</p>
       ) : (
